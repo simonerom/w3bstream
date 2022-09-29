@@ -16,46 +16,43 @@
 
 - os : macOS(11.0+)
 - docker: to start a postgres
-- httpie: a simple curl command
-- tinygo: to build wasm code
 
-### Init protocols and database
+### Setup:
+Initiate protocols and database
 
 ```sh
 make run_depends # start postgres and mqtt
 make migrate     # create or update schema
 ```
 
-### start a server
+boot up the w3bstream server
 ```sh
 make run_server
 ```
-keep the terminal alive, and open a new terminal for the other commands.
 
-### create admin account
 
-> if admin already created, skip this step
+### Account Creation:
+
+Please keep the terminal alive, and open a new terminal for following interactions with the server
 
 ```sh
-make create_admin
+make create_admin // if admin already created, skip this step
 ```
 
-output like
+you are expected to see the output like below
 ```sh
 > username: admin
 > password: {$password}
 > please remember it
 ```
 
-### login (fetch auth token)
-
-command
+### Login (fetch auth token):
 
 ```sh
-echo '{"username":"admin","password":"{password}"}' | http put :8888/srv-applet-mgr/v0/login 
+curl -X PUT localhost:8888/srv-applet-mgr/v0/login -d '{"username":"admin","password":"{password}"}'
 ```
 
-output like
+you are expected to see the output like below
 
 ```json
 {
@@ -66,16 +63,11 @@ output like
 }
 ```
 
-### create your project
-
-command
-
+### Project creation:
 ```sh
-echo '{"name":"{project_name}","version":"0.0.1"}' | http post :8888/srv-applet-mgr/v0/project -A bearer -a {token}
+curl -X POST localhost:8888/srv-applet-mgr/v0/project -H "Authorization: Bearer {token}" -d '{"name":"{project_name}","version":"0.0.1"}'
 ```
-
-output like
-
+you are expected to see the output like below
 ```json
 {
   "accountID": "{account_id}",
@@ -87,22 +79,15 @@ output like
 }
 ```
 
-### build demo wasm scripts
+### Applet Deploy
+Please prepare the compiled wasm file before uploaded to the server. Wasm examples are given under the folder `./pkg/modules/vm/testdata` for reference
 
+1. upload wasm
 ```sh
-make wasm_demo ## build to pkg/modules/vm/testdata/ use to deploy wasm applet
-``` 
-
-### create and deploy applet
-
-
-upload wasm script
-
-```sh
-http --form post :8888/srv-applet-mgr/v0/applet file@{path_to_wasm_file} info='{"projectID":"{project_id}","appletName":"{applet_name}"}' -A bearer -a {token}
+curl -X POST localhost:8888/srv-applet-mgr/v0/applet -H "Authorization: Bearer {token}" -F info='{"projectID":"{project_id}","appletName":"{your_applet_name}"}' -F file=@{path_to_wasm_file}
 ```
 
-output like
+you are expected to see the output like below
 
 ```json
 {
@@ -115,21 +100,21 @@ output like
 }
 ```
 
-deploy applet
+2. deploy applet
 ```sh
-http post :8888/srv-applet-mgr/v0/deploy/applet/{applet_id} -A bearer -a {token}
+curl -X POST localhost:8888/srv-applet-mgr/v0/deploy/applet/{applet_id} -H "Authorization: Bearer {token}"
 ```
 
-start applet
+### Run applet 
 ```sh
-http put :8888/srv-applet-mgr/v0/deploy/{instance_id}/START -A bearer -a {token}
+curl -X PUT localhost:8888/srv-applet-mgr/v0/deploy/{instance_id}/START -H "Authorization: Bearer {token}" 
 ```
 
-### publish event to server
-
+### Push an event to server
 ```sh
 curl --location --request POST 'localhost:8888/srv-applet-mgr/v0/event/{project_id}/{applet_id}/start' \
 --header 'publisher: {publisher_id}' \
 --header 'Content-Type: text/plain' \
 --data-raw 'input a test sentence'
 ```
+`publisher_id` is the identifier of the events' publisher

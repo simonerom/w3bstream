@@ -3,7 +3,7 @@ SRV_APPLET_MGR__BROKER__QoS: ONCE
 SRV_APPLET_MGR__BROKER__RetainPublish: "false"
 SRV_APPLET_MGR__BROKER__Retry_Interval: 3s
 SRV_APPLET_MGR__BROKER__Retry_Repeats: "3"
-SRV_APPLET_MGR__BROKER__Server: mqtt://127.0.0.1:1883
+SRV_APPLET_MGR__BROKER__Server: mqtt://127.0.0.1:18883
 SRV_APPLET_MGR__BROKER__Timeout: 3s
 
 SRV_APPLET_MGR__CONFIG__ResourceRoot: ./asserts
