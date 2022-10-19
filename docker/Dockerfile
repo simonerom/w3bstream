@@ -38,8 +38,8 @@ RUN chmod +x /bin/pnpm
 
 WORKDIR /w3bstream
 
-COPY --from=build-go /w3bstream/cmd/srv-applet-mgr/srv-applet-mgr /w3bstream/srv-applet-mgr
-COPY --from=build-go /w3bstream/cmd/srv-applet-mgr/config /w3bstream/config
+COPY --from=build-go /w3bstream/cmd/srv-applet-mgr/build/srv-applet-mgr /w3bstream/build/srv-applet-mgr
+COPY --from=build-go /w3bstream/cmd/srv-applet-mgr/build/config /w3bstream/build/config
 
 
 COPY --from=build-nodejs /w3bstream/frontend /w3bstream/frontend

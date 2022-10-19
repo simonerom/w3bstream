@@ -8,7 +8,6 @@ su postgres sh -c "psql -c \"CREATE DATABASE test\""
 su postgres sh -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE test to test_user;;\""
 
 
-
 cd /w3bstream/build && ./srv-applet-mgr migrate
 cd /w3bstream/build && ./srv-applet-mgr &
 
