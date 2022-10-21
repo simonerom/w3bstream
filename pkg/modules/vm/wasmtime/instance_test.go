@@ -9,14 +9,12 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-	"github.com/stretchr/testify/require"
 
 	"github.com/iotexproject/w3bstream/pkg/modules/vm"
 	"github.com/iotexproject/w3bstream/pkg/modules/vm/common"
 	"github.com/iotexproject/w3bstream/pkg/modules/vm/wasmtime"
 	"github.com/iotexproject/w3bstream/pkg/types"
 	"github.com/iotexproject/w3bstream/pkg/types/wasm"
-	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/require"
 )
 
@@ -176,21 +174,21 @@ func TestInstance_WordCountV2(t *testing.T) {
 	NewWithT(t).Expect(unique).To(Equal(wasm.ResultStatusCode(4)))
 }
 
-func TestInstance_TokenDistribute(t *testing.T) {
-	i, err := wasmtime.NewInstanceByCode(context.Background(), wasmTokenDistributeCode)
-	NewWithT(t).Expect(err).To(BeNil())
-	id := vm.AddInstance(i)
+// func TestInstance_TokenDistribute(t *testing.T) {
+// 	i, err := wasmtime.NewInstanceByCode(context.Background(), wasmTokenDistributeCode)
+// 	NewWithT(t).Expect(err).To(BeNil())
+// 	id := vm.AddInstance(i)
 
-	err = vm.StartInstance(id)
-	NewWithT(t).Expect(err).To(BeNil())
-	defer vm.StopInstance(id)
+// 	err = vm.StartInstance(id)
+// 	NewWithT(t).Expect(err).To(BeNil())
+// 	defer vm.StopInstance(id)
 
-	for idx := int32(0); idx < 20; idx++ {
-		_, code := i.HandleEvent("start", []byte("test"))
-		NewWithT(t).Expect(code).To(Equal(wasm.ResultStatusCode_OK))
-		NewWithT(t).Expect(i.Get("clicks")).To(Equal(idx + 1))
-	}
-}
+//		for idx := int32(0); idx < 20; idx++ {
+//			_, code := i.HandleEvent("start", []byte("test"))
+//			NewWithT(t).Expect(code).To(Equal(wasm.ResultStatusCode_OK))
+//			NewWithT(t).Expect(i.Get("clicks")).To(Equal(idx + 1))
+//		}
+//	}
 func TestInstance_SentTx(t *testing.T) {
 	require := require.New(t)
 	wasmSentTxCode, err := os.ReadFile("/home/haaai/iotex/tmp/test4/wasm4/lib6.wasm")

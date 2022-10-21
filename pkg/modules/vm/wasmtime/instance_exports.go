@@ -16,13 +16,9 @@ import (
 	conflog "github.com/iotexproject/Bumblebee/conf/log"
 	"github.com/iotexproject/Bumblebee/x/mapx"
 	"github.com/pkg/errors"
-<<<<<<< HEAD
-=======
 	"github.com/tidwall/gjson"
->>>>>>> 64435d1 (add call contract)
 
 	"github.com/iotexproject/w3bstream/pkg/types/wasm"
-	"github.com/tidwall/gjson"
 )
 
 const (
