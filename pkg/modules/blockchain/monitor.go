@@ -23,7 +23,7 @@ const (
 )
 
 func InitChainDB(ctx context.Context) error {
-	d := types.MustDBExecutorFromContext(ctx)
+	d := types.MustMonitorDBExecutorFromContext(ctx)
 
 	m := &models.Blockchain{
 		RelBlockchain:  models.RelBlockchain{ChainID: 4690},
@@ -71,14 +71,16 @@ func Monitor(ctx context.Context) {
 
 type monitor struct{}
 
-func (l *monitor) sendEvent(ctx context.Context, data []byte, projectName string, et string) error {
+func (l *monitor) sendEvent(ctx context.Context, data []byte, projectName string, eventType string) error {
 	logger := types.MustLoggerFromContext(ctx)
 
 	_, logger = logger.Start(ctx, "monitor.sendEvent")
 	defer logger.End()
 
-	// TODO event type
 	e := &eventpb.Event{
+		Header: &eventpb.Header{
+			EventType: eventType,
+		},
 		Payload: string(data),
 	}
 	body, err := json.Marshal(e)

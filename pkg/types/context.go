@@ -6,22 +6,27 @@ import (
 	"github.com/iotexproject/Bumblebee/conf/log"
 	"github.com/iotexproject/Bumblebee/conf/mqtt"
 	"github.com/iotexproject/Bumblebee/conf/postgres"
+	"github.com/iotexproject/Bumblebee/kit/mq"
 	"github.com/iotexproject/Bumblebee/kit/sqlx"
 	"github.com/iotexproject/Bumblebee/x/contextx"
 	"github.com/iotexproject/Bumblebee/x/misc/must"
-
-	"github.com/iotexproject/w3bstream/pkg/types/wasm"
+	"github.com/iotexproject/w3bstream/pkg/models"
 )
 
 type Context uint8
 
 type (
-	CtxDBExecutor   struct{} // CtxDBExecutor sqlx.DBExecutor
-	CtxPgEndpoint   struct{} // CtxPgEndpoint postgres.Endpoint
-	CtxLogger       struct{} // CtxLogger log.Logger
-	CtxMqttBroker   struct{} // CtxMqttBroker mqtt.Broker
-	CtxUploadConfig struct{} // CtxUploadConfig UploadConfig
-	CtxEthClient    struct{} // CtxEthClient ETHClientConfig
+	CtxDBExecutor        struct{} // CtxDBExecutor sqlx.DBExecutor
+	CtxMonitorDBExecutor struct{} // CtxMonitorDBExecutor sqlx.DBExecutor
+	CtxPgEndpoint        struct{} // CtxPgEndpoint postgres.Endpoint
+	CtxLogger            struct{} // CtxLogger log.Logger
+	CtxMqttBroker        struct{} // CtxMqttBroker mqtt.Broker
+	CtxUploadConfig      struct{} // CtxUploadConfig UploadConfig
+	CtxEthClient         struct{} // CtxEthClient ETHClientConfig
+	CtxTaskWorker        struct{}
+	CtxTaskBoard         struct{}
+	CtxProject           struct{}
+	CtxApplet            struct{}
 )
 
 func WithDBExecutor(ctx context.Context, v sqlx.DBExecutor) context.Context {
@@ -41,6 +46,27 @@ func DBExecutorFromContext(ctx context.Context) (sqlx.DBExecutor, bool) {
 
 func MustDBExecutorFromContext(ctx context.Context) sqlx.DBExecutor {
 	v, ok := DBExecutorFromContext(ctx)
+	must.BeTrue(ok)
+	return v
+}
+
+func WithMonitorDBExecutor(ctx context.Context, v sqlx.DBExecutor) context.Context {
+	return contextx.WithValue(ctx, CtxMonitorDBExecutor{}, v)
+}
+
+func WithMonitorDBExecutorContext(v sqlx.DBExecutor) contextx.WithContext {
+	return func(ctx context.Context) context.Context {
+		return contextx.WithValue(ctx, CtxMonitorDBExecutor{}, v)
+	}
+}
+
+func MonitorDBExecutorFromContext(ctx context.Context) (sqlx.DBExecutor, bool) {
+	v, ok := ctx.Value(CtxMonitorDBExecutor{}).(sqlx.DBExecutor)
+	return v, ok
+}
+
+func MustMonitorDBExecutorFromContext(ctx context.Context) sqlx.DBExecutor {
+	v, ok := MonitorDBExecutorFromContext(ctx)
 	must.BeTrue(ok)
 	return v
 }
@@ -129,23 +155,109 @@ func MustUploadConfigFromContext(ctx context.Context) *UploadConfig {
 	return v
 }
 
-func WithETHClientConfig(ctx context.Context, v *wasm.ETHClientConfig) context.Context {
+func WithETHClientConfig(ctx context.Context, v *ETHClientConfig) context.Context {
 	return contextx.WithValue(ctx, CtxEthClient{}, v)
 }
 
-func WithETHClientConfigContext(v *wasm.ETHClientConfig) contextx.WithContext {
+func WithETHClientConfigContext(v *ETHClientConfig) contextx.WithContext {
 	return func(ctx context.Context) context.Context {
 		return contextx.WithValue(ctx, CtxEthClient{}, v)
 	}
 }
 
-func ETHClientConfigFromContext(ctx context.Context) (*wasm.ETHClientConfig, bool) {
-	v, ok := ctx.Value(CtxEthClient{}).(*wasm.ETHClientConfig)
+func ETHClientConfigFromContext(ctx context.Context) (*ETHClientConfig, bool) {
+	v, ok := ctx.Value(CtxEthClient{}).(*ETHClientConfig)
 	return v, ok
 }
 
-func MustETHClientConfigFromContext(ctx context.Context) *wasm.ETHClientConfig {
+func MustETHClientConfigFromContext(ctx context.Context) *ETHClientConfig {
 	v, ok := ETHClientConfigFromContext(ctx)
+	must.BeTrue(ok)
+	return v
+}
+
+func WithTaskBoard(ctx context.Context, tb *mq.TaskBoard) context.Context {
+	return contextx.WithValue(ctx, CtxTaskBoard{}, tb)
+}
+
+func WithTaskBoardContext(tb *mq.TaskBoard) contextx.WithContext {
+	return func(ctx context.Context) context.Context {
+		return WithTaskBoard(ctx, tb)
+	}
+}
+
+func TaskBoardFromContext(ctx context.Context) (*mq.TaskBoard, bool) {
+	v, ok := ctx.Value(CtxTaskBoard{}).(*mq.TaskBoard)
+	return v, ok
+}
+
+func MustTaskBoardFromContext(ctx context.Context) *mq.TaskBoard {
+	v, ok := TaskBoardFromContext(ctx)
+	must.BeTrue(ok)
+	return v
+}
+
+func WithTaskWorker(ctx context.Context, tw *mq.TaskWorker) context.Context {
+	return contextx.WithValue(ctx, CtxTaskWorker{}, tw)
+}
+
+func WithTaskWorkerContext(tw *mq.TaskWorker) contextx.WithContext {
+	return func(ctx context.Context) context.Context {
+		return WithTaskWorker(ctx, tw)
+	}
+}
+
+func TaskWorkerFromContext(ctx context.Context) (*mq.TaskWorker, bool) {
+	v, ok := ctx.Value(CtxTaskWorker{}).(*mq.TaskWorker)
+	return v, ok
+}
+
+func MustTaskWorkerFromContext(ctx context.Context) *mq.TaskWorker {
+	v, ok := TaskWorkerFromContext(ctx)
+	must.BeTrue(ok)
+	return v
+}
+
+func WithProject(ctx context.Context, p *models.Project) context.Context {
+	_p := *p
+	return contextx.WithValue(ctx, CtxProject{}, &_p)
+}
+
+func WithProjectContext(p *models.Project) contextx.WithContext {
+	return func(ctx context.Context) context.Context {
+		return WithProject(ctx, p)
+	}
+}
+
+func ProjectFromContext(ctx context.Context) (*models.Project, bool) {
+	v, ok := ctx.Value(CtxProject{}).(*models.Project)
+	return v, ok
+}
+
+func MustProjectFromContext(ctx context.Context) *models.Project {
+	v, ok := ProjectFromContext(ctx)
+	must.BeTrue(ok)
+	return v
+}
+
+func WithApplet(ctx context.Context, a *models.Applet) context.Context {
+	_a := *a
+	return contextx.WithValue(ctx, CtxApplet{}, &_a)
+}
+
+func WithAppletContext(a *models.Applet) contextx.WithContext {
+	return func(ctx context.Context) context.Context {
+		return WithApplet(ctx, a)
+	}
+}
+
+func AppletFromContext(ctx context.Context) (*models.Applet, bool) {
+	v, ok := ctx.Value(CtxApplet{}).(*models.Applet)
+	return v, ok
+}
+
+func MustAppletFromContext(ctx context.Context) *models.Applet {
+	v, ok := AppletFromContext(ctx)
 	must.BeTrue(ok)
 	return v
 }

@@ -21,6 +21,7 @@ format: install_goimports
 generate: install_toolkit install_easyjson install_goimports
 	go generate ./...
 	goimports -w -l -local "${MODULE_NAME}" ./
+	toolkit patch goid
 
 ## to migrate database models, if model defines changed, make this entry
 migrate: install_toolkit install_easyjson install_goimports
@@ -32,7 +33,9 @@ build_server: update_go_module generate format
 	@mkdir -p build
 	@mv cmd/srv-applet-mgr/srv-applet-mgr build
 	@rm -rf build/config
-	@cp -r cmd/srv-applet-mgr/config build/config
+	@mkdir -p build/config
+	@cp cmd/srv-applet-mgr/config/default.yml build/config/default.yml
+	@cp build_image/etc/conf/srv-applet-mgr/config/local.yml build/config/local.yml
 	@echo 'succeed! srv-applet-mgr =>build/srv-applet-mgr*'
 	@echo 'succeed! config =>build/config/'
 	@echo 'modify config/local.yaml to use your server config'
@@ -61,14 +64,22 @@ build_image: update_go_module vendor init_frontend update_frontend
 	@docker build -t iotex/w3bstream:v3 .
 	@rm -rf vendor
 
-# drop docker image
+# drop docker container
 drop_image:
-	@docker stop iotex_w3bstream
-	@docker rm iotex_w3bstream
+	@docker-compose -f ./docker-compose.yaml down
+	#@docker stop iotex_w3bstream
+	#@docker rm iotex_w3bstream
+
+# restart docker container
+restart_image:
+	@docker-compose -f ./docker-compose.yaml down
+	@echo "The container was shut down before, now restart it"
+	@WS_WORKING_DIR=$(shell pwd)/build_image docker-compose -p w3bstream -f ./docker-compose.yaml up -d
 
 # run docker image
 run_image:
-	@docker run -d -it --name iotex_w3bstream  -e DATABASE_URL="postgresql://test_user:test_passwd@127.0.0.1/test?schema=applet_management" -e NEXT_PUBLIC_API_URL="http://127.0.0.1:8888" -p 5432:5432 -p 8888:8888 -p 1883:1883  -p 3000:3000 -v $(shell pwd)/build_image/pgdata:/var/lib/postgresql_data -v $(shell pwd)/build_image/asserts:/w3bstream/cmd/srv-applet-mgr/asserts iotex/w3bstream:v3 /bin/sh /init.sh
+	@WS_WORKING_DIR=$(shell pwd)/build_image docker-compose -p w3bstream -f ./docker-compose.yaml up -d
+	#@docker run -d -it --name iotex_w3bstream  -e DATABASE_URL="postgresql://test_user:test_passwd@127.0.0.1/test?schema=applet_management" -e NEXT_PUBLIC_API_URL="http://127.0.0.1:8888" -p 5432:5432 -p 8888:8888 -p 1883:1883  -p 3000:3000 -v $(shell pwd)/build_image/pgdata:/var/lib/postgresql_data -v $(shell pwd)/build_image/asserts:/w3bstream/cmd/srv-applet-mgr/asserts -v $(shell pwd)/build_image/conf/srv-applet-mgr/config/local.yml:/w3bstream/cmd/srv-applet-mgr/config/local.yml iotex/w3bstream:v3 /bin/sh /init.sh
 
 
 ## migrate first

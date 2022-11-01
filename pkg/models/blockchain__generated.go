@@ -15,17 +15,17 @@ import (
 var BlockchainTable *builder.Table
 
 func init() {
-	BlockchainTable = DB.Register(&Blockchain{})
+	BlockchainTable = MonitorDB.Register(&Blockchain{})
 }
 
 type BlockchainIterator struct {
 }
 
-func (BlockchainIterator) New() interface{} {
+func (*BlockchainIterator) New() interface{} {
 	return &Blockchain{}
 }
 
-func (BlockchainIterator) Resolve(v interface{}) *Blockchain {
+func (*BlockchainIterator) Resolve(v interface{}) *Blockchain {
 	return v.(*Blockchain)
 }
 

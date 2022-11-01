@@ -1,0 +1,6 @@
+package enums
+
+const (
+	EVENTTYPEDEFAULT         = "DEFAULT"
+	MONITOR_EVENTTYPEDEFAULT = "MONITOR_DEFAULT"
+)
