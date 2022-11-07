@@ -11,8 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/pkg/errors"
 
-	"github.com/machinefi/Bumblebee/kit/sqlx/builder"
-
+	"github.com/machinefi/w3bstream/pkg/depends/kit/sqlx/builder"
 	"github.com/machinefi/w3bstream/pkg/models"
 	"github.com/machinefi/w3bstream/pkg/types"
 )
@@ -60,7 +59,7 @@ func (t *contract) do(ctx context.Context) {
 			return
 		}
 
-		c.BlockCurrent = toBlock
+		c.BlockCurrent = toBlock + 1
 		if err := c.UpdateByID(d); err != nil {
 			l.Error(errors.Wrap(err, "update contractlog db failed"))
 			return
